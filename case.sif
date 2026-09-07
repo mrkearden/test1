@@ -1,0 +1,115 @@
+Header
+  CHECK KEYWORDS Warn
+  Mesh DB "." "steel_cylinder_3D"
+  Include Path ""
+  Results Directory "res"
+End
+
+Simulation
+  Max Output Level = 5
+  Coordinate System = Cartesian
+  Coordinate Mapping(3) = 1 2 3
+  Simulation Type = Steady state
+  Steady State Max Iterations = 1
+  Output Intervals(1) = 1
+  Coordinate Scaling = 1
+  Solver Input File = case.sif
+  Post File = steady_steel_cylinder_eps0.4.vtu
+End
+
+Constants
+  Gravity(4) = 0 -1 0 9.82
+  Stefan Boltzmann = 5.670374419e-08
+  Permittivity of Vacuum = 8.85418781e-12
+  Permeability of Vacuum = 1.25663706e-6
+  Boltzmann Constant = 1.380649e-23
+  Unit Charge = 1.6021766e-19
+End
+
+Body 1
+  Target Bodies(1) = 1
+  Name = "Steel"
+  Equation = 1
+  Material = 1
+  Initial condition = 1
+!Body Force = 1
+End
+
+Solver 1
+  Equation = Heat Equation
+  Procedure = "HeatSolve" "HeatSolver"
+  Variable = Temperature
+  Exec Solver = Always
+  Stabilize = True
+  Optimize Bandwidth = True
+  Steady State Convergence Tolerance = 1.0e-7
+  Nonlinear System Convergence Tolerance = 1.0e-10
+  Nonlinear System Max Iterations = 500
+  Nonlinear System Newton After Iterations = 3
+  Nonlinear System Newton After Tolerance = 1.0e-3
+  Nonlinear System Relaxation Factor = 1.0
+  Linear System Solver = Iterative
+Linear System Solver = Direct
+Linear System Direct Method = Mumps
+  Linear System Iterative Method = BiCGStab
+  Linear System Max Iterations = 500
+  Linear System Convergence Tolerance = 1.0e-10
+  BiCGstabl polynomial degree = 2
+  Linear System Preconditioning = ILU0
+  Linear System ILUT Tolerance = 1.0e-3
+  Linear System Abort Not Converged = False
+  Linear System Residual Output = 10
+  Linear System Precondition Recompute = 1
+End
+
+Solver 2
+Exec Solver = after all
+Equation = "flux compute"
+Procedure = "FluxSolver" "FluxSolver"
+Calculate Flux = Logical True
+Flux Variable = String Temperature
+Flux Coefficient = String "Heat Conductivity"
+Linear System Solver = "Iterative"
+Linear System Iterative Method = "cg"
+Linear System Preconditioning = ILU0
+Linear System Residual Output = 10
+Linear System Max Iterations = Integer 500
+Linear System Convergence Tolerance = 1.0e-10
+End
+
+Equation 1
+  Name = "Heat Equation - PC"
+!  Phase Change Model = Spatial 2
+  Active Solvers(2) = 1 2
+End
+
+Material 1
+  Name = "Steel (Cylinder Panatere)"
+  Density = 7900
+  Specific Enthalpy = Variable Temperature
+ Real
+ 273.15 0
+ 1000 490000
+ 1001 581000
+ 1643 1000000
+ 1743 1280000
+ 1873 1387000
+ End
+  Sound speed = 5100.0
+  Heat Conductivity = 35.0
+  Youngs modulus = 200.0e9
+  Poisson ratio = 0.285
+  Heat expansion Coefficient = 16.5e-6
+  Emissivity = 0.4
+End
+
+Initial Condition 1
+  Name = "InitialCondition Ambiant"
+  Temperature = 298.15
+End
+
+!Body Force 1
+!Heat Source = 1.E-8
+!End
+
+Include boundary_conditions.dat
